@@ -1,0 +1,5 @@
+pytest
+pandas
+boto3
+python-dotenv
+psycopg2-binary

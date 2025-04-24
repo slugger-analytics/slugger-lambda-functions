@@ -39,6 +39,7 @@ def connect_to_db():
     db_password = os.environ['DB_PASSWORD']
     db_host = os.environ['DB_HOST']
     db_port = os.environ['DB_PORT']
+
     # create connect object to database
     conn = psycopg2.connect(
         dbname = db_name,

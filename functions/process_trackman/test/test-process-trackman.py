@@ -24,7 +24,7 @@ class TestConnectToDB:
     expected_params = {
         'dbname': 'postgres',
         'user': 'postgres',
-        'host': 'alpb-1-instance-1.cx866cecsebt.us-east-2.rds.amazonaws.com',
+        'host': 'alpbb-dev.cx866cecsebt.us-east-2.rds.amazonaws.com',
         'port': '5432',
     }
 
@@ -337,14 +337,14 @@ class TestGetOrInsertPlayer:
         if not id:
             return
 
-        cursor.execute(
-            """
-            DELETE FROM player
-            WHERE player_id = %s;
-            """,
-            (id,)
-        )
-        self.conn.commit()
+        # cursor.execute(
+        #     """
+        #     DELETE FROM player
+        #     WHERE player_id = %s;
+        #     """,
+        #     (id,)
+        # )
+        # self.conn.commit()
     
     def test_insert_batter(self):
         cursor = self.conn.cursor()
@@ -506,3 +506,4 @@ class TestGetOrInsertPlayer:
         finally:
             self.delete_player_by_id(cursor, player_id1)
             self.delete_player_by_id(cursor, player_id2)
+

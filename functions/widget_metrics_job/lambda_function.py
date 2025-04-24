@@ -33,27 +33,23 @@ def lambda_handler(event, context):
                 SELECT widget_id,
                     COUNT(*) AS total_launches,
                     COUNT(DISTINCT user_id) AS unique_views
-                FROM widget_interactions
+                FROM widget_launches
                 WHERE timestamp >= NOW() - INTERVAL '7 days'
                 GROUP BY widget_id
             )
-            INSERT INTO widget_metrics (widget_id, timeframe_type, timeframe_start, total_launches, unique_views)
+            INSERT INTO widget_metrics (widget_id, timeframe_type, timeframe_start, total_launches, unique_launches)
             SELECT widget_id, 
                 'weekly', 
                 NOW() - INTERVAL '7 days', 
                 total_launches, 
                 unique_views
-            FROM weekly_metrics
-            ON CONFLICT (widget_id, timeframe_type)
-            DO UPDATE SET total_launches = EXCLUDED.total_launches, unique_views = EXCLUDED.unique_views; 
-        """)
+            FROM weekly_metrics;
 
-        cursor.execute("""
             WITH monthly_metrics AS (
                 SELECT widget_id,
                     COUNT(*) AS total_launches,
-                    COUNT(DISTINCT user_id) AS unique_launches
-                FROM widget_interactions
+                    COUNT(DISTINCT user_id) AS unique_views
+                FROM widget_launches
                 WHERE timestamp >= NOW() - INTERVAL '30 days'
                 GROUP BY widget_id
             )
@@ -62,38 +58,30 @@ def lambda_handler(event, context):
                 'monthly', 
                 NOW() - INTERVAL '30 days', 
                 total_launches, 
-                unique_launches
-            FROM monthly_metrics
-            ON CONFLICT (widget_id, timeframe_type)
-            DO UPDATE SET total_launches = EXCLUDED.total_launches, unique_launches = EXCLUDED.unique_launches;        
-        """)
+                unique_views
+            FROM monthly_metrics;
 
-        cursor.execute("""
             WITH yearly_metrics AS (
                 SELECT widget_id,
                     COUNT(*) AS total_launches,
-                    COUNT(DISTINCT user_id) AS unique_launches
-                FROM widget_interactions
+                    COUNT(DISTINCT user_id) AS unique_views
+                FROM widget_launches
                 WHERE timestamp >= NOW() - INTERVAL '365 days'
                 GROUP BY widget_id
             )
             INSERT INTO widget_metrics (widget_id, timeframe_type, timeframe_start, total_launches, unique_launches)
             SELECT widget_id, 
-                'yearly', 
+                'yearly',
                 NOW() - INTERVAL '365 days', 
                 total_launches, 
-                unique_launches
-            FROM yearly_metrics
-            ON CONFLICT (widget_id, timeframe_type)
-            DO UPDATE SET total_launches = EXCLUDED.total_launches, unique_launches = EXCLUDED.unique_launches;                        
-        """)
+                unique_views
+            FROM yearly_metrics;
 
-        cursor.execute("""
             WITH all_time_metrics AS (
                 SELECT widget_id,
                     COUNT(*) AS total_launches,
-                    COUNT(DISTINCT user_id) AS unique_launches
-                FROM widget_interactions
+                    COUNT(DISTINCT user_id) AS unique_views
+                FROM widget_launches
                 GROUP BY widget_id
             )
             INSERT INTO widget_metrics (widget_id, timeframe_type, timeframe_start, total_launches, unique_launches)
@@ -101,17 +89,15 @@ def lambda_handler(event, context):
                 'all_time', 
                 '1970-01-01'::timestamp,  -- or the earliest date you want to track from
                 total_launches, 
-                unique_launches
+                unique_views
             FROM all_time_metrics
-            ON CONFLICT (widget_id, timeframe_type)
-            DO UPDATE SET total_launches = EXCLUDED.total_launches, unique_launches = EXCLUDED.unique_launches;      
+            ON CONFLICT (widget_id, timeframe_type, timeframe_start) 
+            DO UPDATE SET 
+                total_launches = EXCLUDED.total_launches,
+                unique_launches = EXCLUDED.unique_launches;
         """)
 
         # Commit changes
-        conn.commit()
-        cursor.close()
-        conn.close()
-        
         conn.commit()
 
         return {"statusCode": 200, 
