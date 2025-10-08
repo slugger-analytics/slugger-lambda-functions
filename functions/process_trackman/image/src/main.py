@@ -266,8 +266,13 @@ def construct_set_clause(columns):
 def get_or_insert_player(player_name, handedness, team_code, player_type, conn):
     """ Get the player ID from the player name, handedness, and team. Insert the player if they do not exist. """
 
-    # Edge case: player_name is null (not usefull to us)
-    if not player_name or (isinstance(player_name, str) and player_name.lower() == "nan"):
+    # Edge case: player_name is null (not useful to us)
+    # Handle both string "nan" and pandas NaN (float)
+    if not player_name:
+        return None
+    if isinstance(player_name, str) and player_name.lower() == "nan":
+        return None
+    if isinstance(player_name, float) and pd.isna(player_name):
         return None
 
     # Edge case: plyaer_type is not a string
