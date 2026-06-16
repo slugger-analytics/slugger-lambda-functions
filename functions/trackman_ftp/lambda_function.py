@@ -97,6 +97,7 @@ def s3_obj_exists(s3_client, bucket_name, s3_key):
             raise
 
 def lambda_handler(event, context):
+    ftp = None
     try:
         # Connect to FTP server
         ftp = ftp_connection()
@@ -125,4 +126,5 @@ def lambda_handler(event, context):
         print(traceback.format_exc())
         print('********************************************************')
     finally:
-        ftp.quit()
+        if ftp is not None:
+            ftp.quit()

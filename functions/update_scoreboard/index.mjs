@@ -121,5 +121,3 @@ export const handler = async () => {
     throw err;
   }
 };
-
-handler({ test: true }).then(console.log).catch(console.error);

@@ -25,6 +25,8 @@ def connect_to_rds():
         raise e
 
 def lambda_handler(event, context):
+    conn = None
+    cursor = None
     try:
         conn = connect_to_rds()
         cursor = conn.cursor()
@@ -118,5 +120,7 @@ def lambda_handler(event, context):
         }
         
     finally:
-        cursor.close()
-        conn.close()
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()

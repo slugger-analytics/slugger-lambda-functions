@@ -45,14 +45,13 @@ export const handler = async () => {
             statusCode: 200,
             body: {
                 success: true,
-                message: `Successfully uploaded league leaders to ${ bucketName }/${key}`
+                message: `Successfully uploaded league leaders to ${BUCKET_NAME}/${key}`
             }
         }
     } catch (error) {
         console.error(error);
         return {
             statusCode: 500,
-            headers,
             body: {
                 success: false,
                 message: "Could not update league leaders: " + error.message
